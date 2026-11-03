@@ -1,0 +1,2941 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Urja Meter API",
+    "description": "\nA clean, documented REST API over the **Urja Meter Ops** portal (which has no API of its own).\n\n* **Meters** \u2013 inventory with filtering, search, proximity and bounding-box queries.\n* **Readings** \u2013 cleaned interval readings with derived consumption, or daily roll-ups.\n* **Network** \u2013 the meter hierarchy (Zone \u203a Circle \u203a Division \u203a Subdivision \u203a Substation \u203a Feeder \u203a DT),\n  reconstructed and repaired from per-meter records.\n* **Insights** \u2013 data-quality report and fleet anomalies the portal can't show.\n\nAll timestamps are ISO 8601 in IST (+05:30). Errors use RFC 9457 `application/problem+json`.\nIf the server sets `URJA_API_KEYS`, send one in the `X-API-Key` header.\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/meters": {
+      "get": {
+        "tags": [
+          "Meters"
+        ],
+        "summary": "List and filter meters",
+        "operationId": "list_meters_v1_meters_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Substring match on meter id or serial number (case-insensitive).",
+              "title": "Q"
+            },
+            "description": "Substring match on meter id or serial number (case-insensitive)."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "installed, faulty, decommissioned. Repeat or comma-separate for OR.",
+              "title": "Status"
+            },
+            "description": "installed, faulty, decommissioned. Repeat or comma-separate for OR."
+          },
+          {
+            "name": "make",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Make"
+            }
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "single, three",
+              "title": "Phase"
+            },
+            "description": "single, three"
+          },
+          {
+            "name": "install_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "whole_current, ct_operated",
+              "title": "Install Type"
+            },
+            "description": "whole_current, ct_operated"
+          },
+          {
+            "name": "record_format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "legacy, v2",
+              "title": "Record Format"
+            },
+            "description": "legacy, v2"
+          },
+          {
+            "name": "transformer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Transformer (DT) code, e.g. DT-007",
+              "title": "Transformer"
+            },
+            "description": "Transformer (DT) code, e.g. DT-007"
+          },
+          {
+            "name": "feeder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Feeder code, e.g. F-001 (note: codes can repeat under different substations)",
+              "title": "Feeder"
+            },
+            "description": "Feeder code, e.g. F-001 (note: codes can repeat under different substations)"
+          },
+          {
+            "name": "substation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Substation"
+            }
+          },
+          {
+            "name": "subdivision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Subdivision"
+            }
+          },
+          {
+            "name": "division",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Division"
+            }
+          },
+          {
+            "name": "circle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Circle"
+            }
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zone"
+            }
+          },
+          {
+            "name": "network_node",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Path-scoped node id from /v1/network, e.g. Z-01/C-01; returns everything beneath it.",
+              "title": "Network Node"
+            },
+            "description": "Path-scoped node id from /v1/network, e.g. Z-01/C-01; returns everything beneath it."
+          },
+          {
+            "name": "near",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "'lat,lng' \u2014 return meters within radius_km, nearest first.",
+              "examples": [
+                "26.91,75.79"
+              ],
+              "title": "Near"
+            },
+            "description": "'lat,lng' \u2014 return meters within radius_km, nearest first."
+          },
+          {
+            "name": "radius_km",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 100,
+              "exclusiveMinimum": 0,
+              "default": 1.0,
+              "title": "Radius Km"
+            }
+          },
+          {
+            "name": "bbox",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "'south,west,north,east' bounding box.",
+              "title": "Bbox"
+            },
+            "description": "'south,west,north,east' bounding box."
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "meter_id, serial_no, make, status, transformer_code, phase; prefix '-' for descending. Proximity queries always sort by distance.",
+              "default": "meter_id",
+              "title": "Sort"
+            },
+            "description": "meter_id, serial_no, make, status, transformer_code, phase; prefix '-' for descending. Proximity queries always sort by distance."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/meters/facets": {
+      "get": {
+        "tags": [
+          "Meters"
+        ],
+        "summary": "Counts per attribute value (for building filters)",
+        "operationId": "facets_v1_meters_facets_get",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Facets"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/meters/{meter_id}": {
+      "get": {
+        "tags": [
+          "Meters"
+        ],
+        "summary": "Get one meter",
+        "operationId": "get_meter_v1_meters__meter_id__get",
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Meter Id"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown meter"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/meters/{meter_id}/readings": {
+      "get": {
+        "tags": [
+          "Meters"
+        ],
+        "summary": "Energy readings and consumption for a meter",
+        "description": "Returns cleaned interval readings (`granularity=raw`) or per-day consumption (`granularity=daily`) for an inclusive date range in IST. The portal stores cumulative registers; this endpoint also derives per-interval consumption. With no dates, returns the 7 days ending at the meter's latest reading (matching the portal's default). Results are cached; see `meta.cache`.",
+        "operationId": "get_readings_v1_meters__meter_id__readings_get",
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Meter Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Start date (inclusive), YYYY-MM-DD, IST.",
+              "title": "From"
+            },
+            "description": "Start date (inclusive), YYYY-MM-DD, IST."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "End date (inclusive), YYYY-MM-DD, IST.",
+              "title": "To"
+            },
+            "description": "End date (inclusive), YYYY-MM-DD, IST."
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "raw",
+                "daily"
+              ],
+              "type": "string",
+              "default": "raw",
+              "title": "Granularity"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown meter"
+          },
+          "422": {
+            "description": "Invalid date range"
+          }
+        }
+      }
+    },
+    "/v1/transformers": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "List distribution transformers (DTs)",
+        "operationId": "list_transformers_v1_transformers_get",
+        "parameters": [
+          {
+            "name": "feeder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by feeder code",
+              "title": "Feeder"
+            },
+            "description": "Filter by feeder code"
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformerList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/transformers/{code}": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "One transformer with its upstream chain and meters",
+        "operationId": "get_transformer_v1_transformers__code__get",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Code"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformerDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/network/tree": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Reconstructed network hierarchy",
+        "operationId": "tree_v1_network_tree_get",
+        "parameters": [
+          {
+            "name": "depth",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 7,
+              "minimum": 1,
+              "description": "1 = zones only \u2026 7 = down to transformers",
+              "default": 7,
+              "title": "Depth"
+            },
+            "description": "1 = zones only \u2026 7 = down to transformers"
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/network/nodes/{node_id}": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "One hierarchy node, its children and meters",
+        "operationId": "node_v1_network_nodes__node_id__get",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Node Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 0,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/data-quality": {
+      "get": {
+        "tags": [
+          "Network",
+          "Insights"
+        ],
+        "summary": "What was wrong with the portal's data and how it was repaired",
+        "operationId": "data_quality_v1_data_quality_get",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualityResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/insights": {
+      "get": {
+        "tags": [
+          "Network",
+          "Insights"
+        ],
+        "summary": "Fleet health: anomalies, top consumers, transformer loading",
+        "operationId": "insights_v1_insights_get",
+        "parameters": [
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 31,
+              "minimum": 1,
+              "default": 7,
+              "title": "Window Days"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Liveness, data freshness and portal client stats",
+        "operationId": "health_v1_health_get",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/sync": {
+      "post": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Force an inventory refresh from the portal now",
+        "operationId": "force_sync_v1_admin_sync_post",
+        "parameters": [
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Required only if the server sets URJA_API_KEYS.",
+              "title": "X-Api-Key"
+            },
+            "description": "Required only if the server sets URJA_API_KEYS."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Portal unavailable or inventory not loaded yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Anomaly": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id"
+          },
+          "transformer_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transformer Code"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "examples": [
+              "decommissioned_but_consuming"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id",
+          "transformer_code",
+          "status",
+          "type",
+          "severity",
+          "message"
+        ],
+        "title": "Anomaly"
+      },
+      "DailyConsumption": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date",
+            "examples": [
+              "2026-06-24"
+            ]
+          },
+          "kwh": {
+            "type": "number",
+            "title": "Kwh"
+          },
+          "kvah": {
+            "type": "number",
+            "title": "Kvah"
+          },
+          "power_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Power Factor"
+          },
+          "intervals": {
+            "type": "integer",
+            "title": "Intervals",
+            "description": "Number of intervals that contributed."
+          },
+          "completeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness",
+            "description": "intervals / expected intervals for the meter's cadence (1.0 = complete day)."
+          },
+          "voltage_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage Min"
+          },
+          "voltage_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage Max"
+          },
+          "voltage_avg": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage Avg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "kwh",
+          "kvah",
+          "power_factor",
+          "intervals",
+          "completeness",
+          "voltage_min",
+          "voltage_max",
+          "voltage_avg"
+        ],
+        "title": "DailyConsumption"
+      },
+      "DataQualityIssue": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "examples": [
+              "blank_code_filled"
+            ]
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "examples": [
+              "circle"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning"
+            ],
+            "title": "Severity"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "severity",
+          "message"
+        ],
+        "title": "DataQualityIssue"
+      },
+      "DataQualityResponse": {
+        "properties": {
+          "issue_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Issue Counts"
+          },
+          "code_reuse": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Code Reuse",
+            "description": "Codes that appear under more than one parent (why node ids are path-scoped)."
+          },
+          "transformers_without_meters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Transformers Without Meters"
+          },
+          "issues": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue_counts",
+          "code_reuse",
+          "transformers_without_meters",
+          "issues"
+        ],
+        "title": "DataQualityResponse"
+      },
+      "Facets": {
+        "properties": {
+          "data": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Data",
+            "examples": [
+              {
+                "status": {
+                  "decommissioned": 75,
+                  "faulty": 90,
+                  "installed": 238
+                }
+              }
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Facets"
+      },
+      "FreshnessMeta": {
+        "properties": {
+          "synced_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced At",
+            "description": "When the inventory snapshot was taken from the portal (IST)."
+          },
+          "age_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age S"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale",
+            "description": "True if the snapshot is older than twice the refresh interval (e.g. portal down)."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "'export' (signed bulk endpoint) or 'crawl' (page-by-page fallback)."
+          },
+          "last_sync_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "synced_at",
+          "age_s",
+          "stale",
+          "source",
+          "last_sync_error"
+        ],
+        "title": "FreshnessMeta"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded",
+              "starting"
+            ],
+            "title": "Status"
+          },
+          "inventory": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          },
+          "meters": {
+            "type": "integer",
+            "title": "Meters"
+          },
+          "portal": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Portal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "inventory",
+          "meters",
+          "portal"
+        ],
+        "title": "Health"
+      },
+      "InsightsResponse": {
+        "properties": {
+          "window": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Window"
+          },
+          "coverage": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Coverage",
+            "description": "How many meters have cached readings; insights only cover those."
+          },
+          "warmup": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Warmup"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Status Counts"
+          },
+          "cadence_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Cadence Counts"
+          },
+          "anomaly_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Anomaly Counts"
+          },
+          "anomalies": {
+            "items": {
+              "$ref": "#/components/schemas/Anomaly"
+            },
+            "type": "array",
+            "title": "Anomalies"
+          },
+          "top_consumers": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Top Consumers"
+          },
+          "daily_fleet_kwh": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Daily Fleet Kwh",
+            "description": "Sum over covered meters only; compare with coverage before reading trends."
+          },
+          "consumption_histogram": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Consumption Histogram",
+            "description": "Meters per 2 kWh/day bin of average daily consumption."
+          },
+          "avg_daily_kwh_per_meter": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Daily Kwh Per Meter"
+          },
+          "transformer_loading": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Transformer Loading"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window",
+          "coverage",
+          "warmup",
+          "status_counts",
+          "cadence_counts",
+          "anomaly_counts",
+          "anomalies",
+          "top_consumers",
+          "daily_fleet_kwh",
+          "consumption_histogram",
+          "avg_daily_kwh_per_meter",
+          "transformer_loading"
+        ],
+        "title": "InsightsResponse"
+      },
+      "Location": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "title": "Lat",
+            "examples": [
+              26.938961
+            ]
+          },
+          "lng": {
+            "type": "number",
+            "title": "Lng",
+            "examples": [
+              75.830957
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "Location"
+      },
+      "Meter": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id",
+            "examples": [
+              "J100000"
+            ]
+          },
+          "serial_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Serial No",
+            "examples": [
+              "SE33962"
+            ]
+          },
+          "make": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Make",
+            "examples": [
+              "HPL"
+            ]
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "single",
+                  "three"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "installed",
+                  "faulty",
+                  "decommissioned"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "install_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "whole_current",
+                  "ct_operated"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Install Type"
+          },
+          "record_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Format",
+            "description": "Which portal record format the meter uses ('legacy' or 'v2')."
+          },
+          "transformer_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transformer Code",
+            "examples": [
+              "DT-001"
+            ]
+          },
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          },
+          "network_path": {
+            "type": "string",
+            "title": "Network Path",
+            "examples": [
+              "Z-01/C-01/D-01/SD-01/SS-01/F-001/DT-001"
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_quality": {
+            "items": {
+              "$ref": "#/components/schemas/DataQualityIssue"
+            },
+            "type": "array",
+            "title": "Data Quality",
+            "description": "Repairs or inconsistencies found in the portal's record for this meter."
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km",
+            "description": "Only present on proximity queries."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id",
+          "serial_no",
+          "make",
+          "phase",
+          "status",
+          "install_type",
+          "record_format",
+          "transformer_code",
+          "network",
+          "network_path",
+          "location",
+          "data_quality"
+        ],
+        "title": "Meter"
+      },
+      "MeterList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Meter"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "page",
+          "meta"
+        ],
+        "title": "MeterList"
+      },
+      "MeterResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Meter"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "MeterResponse"
+      },
+      "Network": {
+        "properties": {
+          "zone": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "circle": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "division": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "subdivision": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "substation": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "feeder": {
+            "$ref": "#/components/schemas/NetworkNode"
+          },
+          "transformer": {
+            "$ref": "#/components/schemas/NetworkNode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "zone",
+          "circle",
+          "division",
+          "subdivision",
+          "substation",
+          "feeder",
+          "transformer"
+        ],
+        "title": "Network"
+      },
+      "NetworkNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Path-scoped node id, unique across the network (codes alone are not).",
+            "examples": [
+              "Z-01/C-01/D-01"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "examples": [
+              "D-01"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": [
+              "Division 1"
+            ]
+          },
+          "alias": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alias",
+            "description": "Alternative name seen on some meter records (transformers only)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "title": "NetworkNode"
+      },
+      "NodeResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TreeNode"
+          },
+          "meters": {
+            "items": {
+              "$ref": "#/components/schemas/Meter"
+            },
+            "type": "array",
+            "title": "Meters",
+            "description": "Meters under this node (first `limit`)."
+          },
+          "meter_total": {
+            "type": "integer",
+            "title": "Meter Total"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meters",
+          "meter_total",
+          "meta"
+        ],
+        "title": "NodeResponse"
+      },
+      "Page": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "next_offset"
+        ],
+        "title": "Page"
+      },
+      "Problem": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "about:blank",
+            "examples": [
+              "https://urja-meter-api/problems/not-found"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "status"
+        ],
+        "title": "Problem",
+        "description": "RFC 9457 problem details."
+      },
+      "Reading": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "ISO 8601, IST (+05:30)",
+            "examples": [
+              "2026-06-24T00:30:00+05:30"
+            ]
+          },
+          "kwh_register": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kwh Register",
+            "description": "Cumulative active-energy register (kWh) as read."
+          },
+          "kvah_register": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kvah Register",
+            "description": "Cumulative apparent-energy register (kVAh) as read."
+          },
+          "kwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kwh",
+            "description": "Consumption since the previous reading (kWh). Null for the first reading or if the register went backwards."
+          },
+          "kvah": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kvah"
+          },
+          "voltage_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage R",
+            "description": "R-phase voltage (V)."
+          },
+          "interval_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interval Start",
+            "description": "Start of the interval this row's kWh covers."
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "description": "e.g. missing_kwh, voltage_out_of_band, register_decreased"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "kwh_register",
+          "kvah_register",
+          "kwh",
+          "kvah",
+          "voltage_r",
+          "interval_start",
+          "flags"
+        ],
+        "title": "Reading"
+      },
+      "ReadingsMeta": {
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "cache": {
+            "type": "string",
+            "enum": [
+              "hit",
+              "miss"
+            ],
+            "title": "Cache"
+          },
+          "portal_calls": {
+            "type": "integer",
+            "title": "Portal Calls"
+          },
+          "cleaning": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Cleaning",
+            "description": "What was cleaned on this fetch (duplicates merged, blanks, ...)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "timezone",
+          "cache",
+          "portal_calls",
+          "cleaning"
+        ],
+        "title": "ReadingsMeta"
+      },
+      "ReadingsResponse": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id"
+          },
+          "from": {
+            "type": "string",
+            "title": "From"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": [
+              "raw",
+              "daily"
+            ],
+            "title": "Granularity"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ReadingsSummary"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Reading"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DailyConsumption"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ReadingsMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id",
+          "from",
+          "to",
+          "granularity",
+          "summary",
+          "data",
+          "meta"
+        ],
+        "title": "ReadingsResponse"
+      },
+      "ReadingsSummary": {
+        "properties": {
+          "consumption_kwh": {
+            "type": "number",
+            "title": "Consumption Kwh"
+          },
+          "apparent_energy_kvah": {
+            "type": "number",
+            "title": "Apparent Energy Kvah"
+          },
+          "power_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Power Factor"
+          },
+          "avg_daily_kwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Daily Kwh"
+          },
+          "peak_day": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Day"
+          },
+          "readings": {
+            "type": "integer",
+            "title": "Readings"
+          },
+          "cadence_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cadence Minutes",
+            "description": "30 for AMI half-hourly meters, 1440 for daily reads."
+          },
+          "first_reading": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Reading"
+          },
+          "last_reading": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Reading"
+          },
+          "voltage_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage Min"
+          },
+          "voltage_max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voltage Max"
+          },
+          "voltage_out_of_band": {
+            "type": "integer",
+            "title": "Voltage Out Of Band"
+          },
+          "latest_register_kwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Register Kwh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consumption_kwh",
+          "apparent_energy_kvah",
+          "power_factor",
+          "avg_daily_kwh",
+          "peak_day",
+          "readings",
+          "cadence_minutes",
+          "first_reading",
+          "last_reading",
+          "voltage_min",
+          "voltage_max",
+          "voltage_out_of_band",
+          "latest_register_kwh"
+        ],
+        "title": "ReadingsSummary"
+      },
+      "SyncResult": {
+        "properties": {
+          "meters": {
+            "type": "integer",
+            "title": "Meters"
+          },
+          "transformers": {
+            "type": "integer",
+            "title": "Transformers"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "duration_s": {
+            "type": "number",
+            "title": "Duration S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meters",
+          "transformers",
+          "source",
+          "duration_s"
+        ],
+        "title": "SyncResult"
+      },
+      "Transformer": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "examples": [
+              "DT-001"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": [
+              "Malviya Nagar DT 1"
+            ]
+          },
+          "feeder_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feeder Code",
+            "examples": [
+              "F-001"
+            ]
+          },
+          "capacity_kva": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Kva",
+            "examples": [
+              100
+            ]
+          },
+          "meter_count": {
+            "type": "integer",
+            "title": "Meter Count"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "feeder_code",
+          "capacity_kva",
+          "meter_count",
+          "aliases"
+        ],
+        "title": "Transformer"
+      },
+      "TransformerDetail": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Transformer"
+          },
+          "network": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/NetworkNode"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Network",
+            "description": "Upstream chain (zone \u2026 feeder) for this transformer."
+          },
+          "meters": {
+            "items": {
+              "$ref": "#/components/schemas/Meter"
+            },
+            "type": "array",
+            "title": "Meters"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Status Counts"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "network",
+          "meters",
+          "status_counts",
+          "meta"
+        ],
+        "title": "TransformerDetail"
+      },
+      "TransformerList": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/Transformer"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "TransformerList"
+      },
+      "TreeNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "zone",
+              "circle",
+              "division",
+              "subdivision",
+              "substation",
+              "feeder",
+              "transformer"
+            ],
+            "title": "Level"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "meter_count": {
+            "type": "integer",
+            "title": "Meter Count"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Status Counts"
+          },
+          "capacity_kva": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Kva"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/TreeNode"
+            },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "level",
+          "code",
+          "name",
+          "meter_count",
+          "status_counts",
+          "children"
+        ],
+        "title": "TreeNode"
+      },
+      "TreeResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/TreeNode"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/FreshnessMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "TreeResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Meters",
+      "description": "Meter inventory and readings."
+    },
+    {
+      "name": "Network",
+      "description": "Transformers and the reconstructed network hierarchy."
+    },
+    {
+      "name": "Insights",
+      "description": "Data quality and fleet-level analysis."
+    },
+    {
+      "name": "System",
+      "description": "Health and operations."
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development"
+    }
+  ]
+}

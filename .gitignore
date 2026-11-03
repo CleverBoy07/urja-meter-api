@@ -1,0 +1,20 @@
+# Secrets — never commit real portal credentials
+.env
+.env.*
+!.env.example
+
+# Local cache / index
+data/
+*.sqlite
+*.sqlite-*
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.DS_Store
+.claude/

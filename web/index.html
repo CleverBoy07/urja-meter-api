@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Urja Meter Console</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232a78d6' d='M13 2 4 14h7l-1 8 9-12h-7z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
+      <div>
+        <strong>Urja Meter Console</strong>
+        <span>Jaipur distribution network</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-view="overview" aria-selected="true">Overview</button>
+      <button role="tab" data-view="map">Map</button>
+      <button role="tab" data-view="meters">Meters</button>
+      <button role="tab" data-view="network">Network</button>
+    </nav>
+    <div class="freshness" id="freshness" title="Inventory freshness">…</div>
+  </header>
+
+  <main>
+    <!-- Overview -->
+    <section class="view" id="view-overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="grid two">
+        <article class="card">
+          <header><h2>How much do meters consume?</h2><span class="muted" id="fleet-window"></span></header>
+          <div class="chart-box"><canvas id="fleet-chart" aria-label="Distribution of average daily consumption per meter"></canvas></div>
+          <p class="note" id="coverage-note"></p>
+        </article>
+        <article class="card">
+          <header><h2>Needs attention</h2><span class="muted" id="anomaly-total"></span></header>
+          <div class="anomaly-types" id="anomaly-types"></div>
+          <ul class="anomaly-list" id="anomaly-list"></ul>
+        </article>
+      </div>
+      <div class="grid two">
+        <article class="card">
+          <header><h2>Transformer loading</h2><span class="muted">avg demand vs. nameplate kVA</span></header>
+          <div class="loading-list" id="loading-list"></div>
+        </article>
+        <article class="card">
+          <header><h2>Portal data quality</h2><span class="muted">repaired automatically</span></header>
+          <div id="quality"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="view" id="view-map" hidden>
+      <div class="card map-card">
+        <div class="filters" id="map-filters"></div>
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <!-- Meters -->
+    <section class="view" id="view-meters" hidden>
+      <div class="card">
+        <div class="filters">
+          <input type="search" id="meter-q" placeholder="Search meter id or serial…" aria-label="Search meters" />
+          <select id="f-status" aria-label="Status"><option value="">All statuses</option></select>
+          <select id="f-make" aria-label="Make"><option value="">All makes</option></select>
+          <select id="f-phase" aria-label="Phase"><option value="">All phases</option></select>
+          <select id="f-zone" aria-label="Zone"><option value="">All zones</option></select>
+          <span class="muted" id="meter-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Meter</th><th>Serial</th><th>Make</th><th>Phase</th><th>Status</th><th>Transformer</th><th>Feeder</th><th></th></tr></thead>
+            <tbody id="meter-rows"></tbody>
+          </table>
+        </div>
+        <div class="pager"><button id="prev">← Prev</button><span id="page-info"></span><button id="next">Next →</button></div>
+      </div>
+    </section>
+
+    <!-- Network -->
+    <section class="view" id="view-network" hidden>
+      <div class="grid network">
+        <article class="card">
+          <header><h2>Hierarchy</h2><span class="muted">Zone › Circle › Division › Subdivision › Substation › Feeder › DT</span></header>
+          <div class="tree" id="tree"></div>
+        </article>
+        <article class="card" id="node-panel">
+          <p class="muted">Select a node to see its meters.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- Meter drawer -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-inner">
+      <button class="close" id="drawer-close" aria-label="Close">✕</button>
+      <div id="drawer-body"></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <footer class="foot">
+    API: <a href="/docs">Swagger</a> · <a href="/reference">Reference</a> · <a href="/openapi.json">openapi.json</a>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
